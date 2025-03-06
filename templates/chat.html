@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LLM Vault Chat Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 400px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        .user {
+            color: blue;
+            margin-bottom: 5px;
+        }
+        .assistant {
+            color: green;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>LLM Vault Chat</h1>
+    <div id="chat"></div>
+    <form id="chatForm">
+        <input type="text" id="message" autocomplete="off" placeholder="Type your message here" style="width: 80%;" />
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        // Function to render chat history
+        function renderChat(history) {
+            const chatDiv = document.getElementById("chat");
+            chatDiv.innerHTML = "";
+            history.forEach(item => {
+                const p = document.createElement("p");
+                p.className = item.role;
+                p.textContent = item.role + ": " + item.message;
+                chatDiv.appendChild(p);
+            });
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        // Handle form submission
+        document.getElementById("chatForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const messageInput = document.getElementById("message");
+            const message = messageInput.value;
+            if (!message) return;
+            const formData = new URLSearchParams();
+            formData.append("message", message);
+            fetch("/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData.toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderChat(data.chat_history);
+                messageInput.value = "";
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
